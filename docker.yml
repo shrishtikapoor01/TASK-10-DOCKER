@@ -1,0 +1,50 @@
+- hosts: 192.168.29.207
+  tasks:
+  - name: "Adding repository to docker"
+    yum_repository:
+      name: "docker"
+      baseurl: https://download.docker.com/linux/centos/7/x86_64/stable
+      description: "Repo file of docker"
+      gpgcheck: no
+
+  - name: "Installing docker Engine"
+    shell: "echo y | yum install docker-ce --nobest --skip-broken"
+
+  - name: "Start docker service"
+    service:
+     name: "docker"
+     state: started
+     enabled: yes
+
+  - name: "Installing docker python lib"
+    pip:
+      name: "docker-py"
+      state: present
+
+  - name: "Downloading image for docker"
+    docker_image:
+      name: "httpd"
+      tag: latest
+      source: pull
+
+  - name: "Creating webpage directory in MN"
+    file:
+      path: "/webpage"
+      state: directory
+
+  - name: "Copying html code to  web page directory"
+    copy:
+      content: "Hii Shrishti this side..!!"
+      dest: "/webpage/sk.html"
+
+  - name: "Launch docker container"
+    docker_container:
+      name: "web-OS"
+      image: httpd
+      state: started
+      exposed_ports:
+      - "80"
+      ports:
+      - "8080:80"
+      volumes:
+      - "/webpage/:/usr/local/apache2/htdocs"
